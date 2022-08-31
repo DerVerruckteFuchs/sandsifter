@@ -514,7 +514,7 @@ class Gui:
                         mnemonic,
                         op_str,
                         self.T.r.length,
-                        "%s" % hexlify(synth_insn)
+                        "%s" % hexlify(synth_insn).decode('utf8')
                     )
                 )
 
@@ -636,7 +636,7 @@ class Gui:
                 try:
                     for (i, r) in enumerate(self.T.al):
                         y = top_bracket_height + 5 + i
-                        insn_hex = hexlify(bytes(cstr2py(r.raw_insn), 'utf8'))
+                        insn_hex = hexlify(bytes(cstr2py(r.raw_insn), 'utf8')).decode('utf8')
 
                         # unexplainable hack to remove some of the unexplainable
                         # flicker on my console.  a bug in ncurses?  doesn't
