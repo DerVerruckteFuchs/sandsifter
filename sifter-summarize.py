@@ -12,7 +12,7 @@
 # preprocessing step to disassemble everything?  i'm afraid that could take
 # forever with how slow capstone is
 
-from __future__ import print_function
+
 import subprocess
 from capstone import *
 from pyutil.progress import progress
@@ -210,7 +210,7 @@ def disassemble_capstone(arch, data):
         return ("", "")
 
     try:
-        (address, size, mnemonic, op_str) = m.disasm_lite(data, 0, 1).next()
+        (address, size, mnemonic, op_str) = next(m.disasm_lite(data, 0, 1))
     except StopIteration:
         mnemonic="(unk)"
         op_str=""
@@ -577,7 +577,7 @@ if __name__ == "__main__":
         if c.v:
             return c.v[0]
         else:
-            return get_solo_leaf(c.d[c.d.keys()[0]])
+            return get_solo_leaf(c.d[list(c.d.keys())[0]])
 
     def build_instruction_summary(c, index=0, summary=None, lookup=None):
         if not summary:
@@ -617,7 +617,7 @@ if __name__ == "__main__":
         gui.box(gui.window, infobox_x, infobox_y, infobox_width, infobox_height, gui.gray(.3))
 
 	#TODO: (minor) this should really be done properly with windows
-        for i in xrange(infobox_y + 1, infobox_y + infobox_height - 1):
+        for i in range(infobox_y + 1, infobox_y + infobox_height - 1):
             gui.window.addstr(i, infobox_x + 1, " " * (infobox_width - 2), gui.gray(0))
 
         if type(o) == Catalog:
@@ -787,13 +787,13 @@ if __name__ == "__main__":
         if key == ord('k'):
             textbox.scroll_up()
         elif key == ord('K'):
-            for _ in xrange(10):
+            for _ in range(10):
                 textbox.scroll_up()
                 smooth_scroll()
         elif key == ord('j'):
             textbox.scroll_down()
         elif key == ord('J'):
-            for _ in xrange(10):
+            for _ in range(10):
                 textbox.scroll_down()
                 smooth_scroll()
         elif key == ord('l'):

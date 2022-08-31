@@ -8,7 +8,7 @@
 
 # run as sudo for best resultsi
 
-from __future__ import print_function
+
 import signal
 import sys
 import subprocess
@@ -127,7 +127,7 @@ def disas_capstone(b):
         else:
             md = Cs(CS_ARCH_X86, CS_MODE_32)
     try:
-        (address, size, mnemonic, op_str) = md.disasm_lite(b, 0, 1).next()
+        (address, size, mnemonic, op_str) = next(md.disasm_lite(b, 0, 1))
     except StopIteration:
         mnemonic="(unk)"
         op_str=""
@@ -234,9 +234,9 @@ def is_valid_write_path(parser, arg):
 
 def result_string(insn, result):
     s = "%30s %2d %2d %2d %2d (%s)\n" % (
-            hexlify(insn), result.valid,
+            hexlify(bytes(insn, 'utf8')), result.valid,
             result.length, result.signum,
-            result.sicode, hexlify(cstr2py(result.raw_insn)))
+            result.sicode, hexlify(bytes(cstr2py(result.raw_insn), 'utf8')))
     return s
 
 class Injector:
@@ -425,12 +425,12 @@ class Gui:
             self.COLOR_GREEN = curses.COLOR_GREEN
             '''
 
-            for i in xrange(0, self.GRAYS):
+            for i in range(0, self.GRAYS):
                 curses.init_color(
                         self.GRAY_BASE + i,
-                        i * 1000 / (self.GRAYS - 1),
-                        i * 1000 / (self.GRAYS - 1),
-                        i * 1000 / (self.GRAYS - 1)
+                        int(i * 1000 / (self.GRAYS - 1)),
+                        int(i * 1000 / (self.GRAYS - 1)),
+                        int(i * 1000 / (self.GRAYS - 1))
                         )
                 curses.init_pair(
                         self.GRAY_BASE + i,
@@ -445,7 +445,7 @@ class Gui:
             self.COLOR_RED = curses.COLOR_RED
             self.COLOR_GREEN = curses.COLOR_GREEN
 
-            for i in xrange(0, self.GRAYS):
+            for i in range(0, self.GRAYS):
                 curses.init_pair(
                         self.GRAY_BASE + i,
                         self.COLOR_WHITE,
@@ -465,10 +465,10 @@ class Gui:
             return curses.color_pair(self.WHITE)
 
     def box(self, window, x, y, w, h, color):
-        for i in xrange(1, w - 1):
+        for i in range(1, w - 1):
             window.addch(y, x + i, curses.ACS_HLINE, color)
             window.addch(y + h - 1, x + i, curses.ACS_HLINE, color)
-        for i in xrange(1, h - 1):
+        for i in range(1, h - 1):
             window.addch(y + i, x, curses.ACS_VLINE, color)
             window.addch(y + i, x + w - 1, curses.ACS_VLINE, color)
         window.addch(y, x, curses.ACS_ULCORNER, color)
@@ -477,14 +477,14 @@ class Gui:
         window.addch(y + h - 1, x + w - 1, curses.ACS_LRCORNER, color)
 
     def bracket(self, window, x, y, h, color):
-        for i in xrange(1, h - 1):
-            window.addch(y + i, x, curses.ACS_VLINE, color)
-        window.addch(y, x, curses.ACS_ULCORNER, color)
-        window.addch(y + h - 1, x, curses.ACS_LLCORNER, color)
+        for i in range(1, h - 1):
+            window.addch(int(y + i), x, curses.ACS_VLINE, color)
+        window.addch(int(y), x, curses.ACS_ULCORNER, color)
+        window.addch(int(y + h - 1), x, curses.ACS_LLCORNER, color)
 
     def vaddstr(self, window, x, y, s, color):
-        for i in xrange(0, len(s)):
-            window.addch(y + i, x, s[i], color)
+        for i in range(0, len(s)):
+            window.addch(int(y + i), x, s[i], color)
 
     def draw(self):
         try:
@@ -507,7 +507,7 @@ class Gui:
             self.vaddstr(self.stdscr, left - 3, top + top_bracket_middle + 5, "sifter", self.gray(.2))
 
             # refresh instruction log
-            synth_insn = cstr2py(self.T.r.raw_insn)
+            synth_insn = bytes(cstr2py(self.T.r.raw_insn), 'utf8')
             (mnemonic, op_str, size) = self.disas(synth_insn)
             self.T.il.append(
                     (
@@ -527,14 +527,14 @@ class Gui:
                         # latest instruction
                         # mnemonic
                         self.stdscr.addstr(
-                                top + 1 + line,
+                                int(top + 1 + line),
                                 left,
                                 "%*s " % (mne_width, mnemonic),
                                 self.gray(1)
                                 )
                         # operands
                         self.stdscr.addstr(
-                                top + 1 + line,
+                                int(top + 1 + line),
                                 left + (mne_width + 1),
                                 "%-*s " % (op_width, op_str),
                                 curses.color_pair(self.BLUE)
@@ -542,13 +542,13 @@ class Gui:
                         # bytes
                         if self.maxx > left + (mne_width + 1) + (op_width + 1) + (raw_width + 1):
                             self.stdscr.addstr(
-                                    top + 1 + line,
+                                    int(top + 1 + line),
                                     left + (mne_width + 1) + (op_width + 1),
                                     "%s" % raw[0:length * 2],
                                     self.gray(.9)
                                     )
                             self.stdscr.addstr(
-                                    top + 1 +line,
+                                    int(top + 1 +line),
                                     left + (mne_width + 1) + (op_width + 1) + length * 2,
                                     "%s" % raw[length * 2:raw_width],
                                     self.gray(.3)
@@ -557,7 +557,7 @@ class Gui:
                         # previous instructions
                         # mnemonic, operands
                         self.stdscr.addstr(
-                                top + 1 + line,
+                                int(top + 1 + line),
                                 left,
                                 "%*s %-*s" % (mne_width, mnemonic, op_width, op_str), 
                                 self.gray(.5)
@@ -565,13 +565,13 @@ class Gui:
                         # bytes
                         if self.maxx > left + (mne_width + 1) + (op_width + 1) + (raw_width + 1):
                             self.stdscr.addstr(
-                                    top + 1 + line,
+                                    int(top + 1 + line),
                                     left + (mne_width + 1) + (op_width + 1),
                                     "%s" % raw[0:length * 2],
                                     self.gray(.3)
                                     )
                             self.stdscr.addstr(
-                                    top + 1 + line,
+                                    int(top + 1 + line),
                                     left + (mne_width + 1) + (op_width + 1) + length * 2,
                                     "%s" % raw[length * 2:raw_width],
                                     self.gray(.1)
@@ -597,7 +597,8 @@ class Gui:
                         self.T.elapsed(),
                         self.gray(.5)
                         )
-
+            top = int(top)
+            top_bracket_middle = int(top_bracket_middle)
             # render injection settings
             self.stdscr.addstr(top + 1, left - 8, "%d" % self.injector.settings.root, self.gray(.1))
             self.stdscr.addstr(top + 1, left - 7, "%s" % arch, self.gray(.1))
@@ -619,7 +620,7 @@ class Gui:
                     "%s" % (int_to_comma(self.T.ic)), self.gray(1))
             # render rate
             self.stdscr.addstr(top + top_bracket_height + 3, left, 
-                    "  %d/s%s" % (rate, " " * min(rate / self.RATE_FACTOR, 100)), curses.A_REVERSE)
+                    "  %d/s%s" % (rate, " " * int(min(rate / self.RATE_FACTOR, 100))), curses.A_REVERSE)
             # render artifact count
             self.stdscr.addstr(top + top_bracket_height + 4, left, "#", self.gray(.5))
             self.stdscr.addstr(top + top_bracket_height + 4, left + 2, 
@@ -635,7 +636,7 @@ class Gui:
                 try:
                     for (i, r) in enumerate(self.T.al):
                         y = top_bracket_height + 5 + i
-                        insn_hex = hexlify(cstr2py(r.raw_insn))
+                        insn_hex = hexlify(bytes(cstr2py(r.raw_insn), 'utf8'))
 
                         # unexplainable hack to remove some of the unexplainable
                         # flicker on my console.  a bug in ncurses?  doesn't
@@ -703,7 +704,7 @@ class Gui:
                 self.ticks = self.ticks + 1
                 if self.ticks & self.TICK_MASK == 0:
                     with open(TICK, 'w') as f:
-                        f.write("%s" % hexlify(synth_insn))
+                        f.write("%s" % hexlify(bytes(synth_insn, 'utf8')))
 
             time.sleep(self.TIME_SLICE)
 
@@ -843,7 +844,7 @@ def main():
     
     if not args.len and not args.unk and not args.dis and not args.ill:
         print("warning: no search type (--len, --unk, --dis, --ill) specified, results will not be recorded.")
-        raw_input()
+        input()
         
     if args.logpath:
         OUTPUT = args.logpath
@@ -880,7 +881,7 @@ def main():
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE
                 ).communicate()
-    arch = re.search(r".*(..)-bit.*", injector_bitness).group(1)
+    arch = re.search(br".*(..)-bit.*", injector_bitness).group(1)
 
     ts = ThreadState()
     signal.signal(signal.SIGINT, exit_handler)

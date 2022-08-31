@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 from capstone import *
 import sys
 from binascii import hexlify, unhexlify
@@ -12,7 +12,7 @@ else:
 
 md = Cs(CS_ARCH_X86, CS_MODE_64)
 try:
-    (address, size, mnemonic, op_str) = md.disasm_lite(unhexlify(byte_string), 0, 1).next()
+    (address, size, mnemonic, op_str) = next(md.disasm_lite(unhexlify(byte_string), 0, 1))
 except StopIteration:
     mnemonic="(unk)"
     op_str=""
